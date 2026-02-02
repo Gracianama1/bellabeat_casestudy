@@ -1,0 +1,147 @@
+# use aggregate functions to find summary statistics for the Calories Table:
+
+SELECT
+  Id,
+  ActivityDay,
+  Calories,
+  ROUND(AVG(COALESCE(Calories,0)) OVER(),2) AvgDailyCal,
+  MAX(Calories) OVER() MaxDailyCal,
+  MIN(Calories) OVER() MinDailyCal,
+  ROUND(COUNT(ActivityDay) OVER () / 33,2) AvgNumDailyEntries
+FROM
+  capstoneproject-483418.fitness_data.calories_1
+
+
+
+
+# use aggregate functions to find summary statistics for the Daily Intensities table
+ 
+SELECT
+  Id,
+  ActivityDay,
+  SedentaryMinutes,
+  FairlyActiveMinutes,
+  ROUND(AVG(COALESCE(SedentaryMinutes,0)) OVER (), 2) AvgSedentaryMin,
+ #round average sedentary minutes to 2 decimal places
+  ROUND(AVG(COALESCE(FairlyActiveMinutes,0)) OVER (), 2) AvgFairActiveMin,
+  ROUND(COUNT(ActivityDay) OVER () / 33, 2) AvgUserInput,
+ #count how many days/month users tracked data
+  MAX(SedentaryMinutes) OVER () MaxSedMin,
+  MAX(FairlyActiveMinutes) OVER() MaxFairActiveMin,
+FROM
+  capstoneproject-483418.fitness_data.intensities
+
+
+
+
+# use aggregate functions to find summary statistics for the Daily Steps table 
+SELECT
+  *,
+  ROUND(COUNT (ActivityDay) OVER ()/ 33, 2) AvgUserInput, 
+#how many days did each user submit data?
+  ROUND(AVG (COALESCE (StepTotal,0)) OVER ()) AvgSteps,
+  MAX(StepTotal) OVER() MaxSteps,
+  MIN(StepTotal) OVER() MinSteps
+FROM `capstoneproject-483418.fitness_data.steps`
+
+
+
+
+# fully join calories & intensities tables to show daily calorie and activity amounts
+
+SELECT
+  C.Id,
+  C.ActivityDay,
+  C.Calories,
+  I.SedentaryMinutes,
+  I.FairlyActiveMinutes,
+FROM
+  capstoneproject-483418.fitness_data.calories AS C
+FULL JOIN `fitness_data.intensities`AS I
+ON I.Id = C.Id
+
+
+
+
+# combine intensities table and steps table using left join 
+SELECT
+  I.Id,
+  I.SedentaryMinutes,
+  I.FairlyActiveMinutes,
+  S.StepTotal
+FROM
+  capstoneproject-483418.fitness_data.intensities AS I
+LEFT JOIN `capstoneproject-483418.fitness_data.steps`AS S
+ON I.Id = S.Id
+
+
+
+# create a subquery to find all calorie entries that are above the average amount
+SELECT #main query
+*
+FROM (
+  SELECT #subquery
+  *,
+  ROUND(AVG(Calories) OVER (),2) AvgCalories #calculate average calories of all entries, round to 2 decimal pts
+  FROM
+  `capstoneproject-483418.fitness_data.calories`
+  )
+  WHERE
+  Calories > AvgCalories  #Find all entries where daily calories were above the average
+
+
+
+
+# combine calorie data using left join subquery with calories and intensities tables
+--main query
+SELECT
+  *
+FROM
+  `capstoneproject-483418.fitness_data.calories` AS C
+--subquery left join to join the number of calories with the calories daily entries
+LEFT JOIN (
+  SELECT
+  Id,
+  COUNT(*) NumEntries
+  FROM
+  `capstoneproject-483418.fitness_data.intensities` AS I
+  GROUP BY Id) I
+ON C.Id = I.Id
+
+
+
+
+
+# use a subquery in the WHERE clause to find dates where the daily amount of activity is higher than the average entry
+--main query
+SELECT
+  Id,
+  ActivityDay,
+  SedentaryMinutes,
+  FairlyActiveMinutes,
+  (SELECT ROUND(AVG(FairlyActiveMinutes),2) FROM `capstoneproject-483418.fitness_data.intensities`)  AS AvgFairlyActiveMin
+FROM
+  `capstoneproject-483418.fitness_data.intensities`
+WHERE
+-- subquery
+  FairlyActiveMinutes > (SELECT ROUND(AVG(FairlyActiveMinutes),2) FROM `capstoneproject-483418.fitness_data.intensities`)
+
+
+
+
+#find averages of calories logged on saturdays and sundays
+SELECT
+  Id,
+  Calories,
+  weekday,
+  AVG(Calories) OVER(PARTITION BY Id) AS AvgCal
+FROM
+  `capstoneproject-483418.fitness_data.daily_calories`
+WHERE
+  weekday IN (7,1)
+
+
+
+
+
+
