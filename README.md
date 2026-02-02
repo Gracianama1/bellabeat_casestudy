@@ -82,11 +82,11 @@ Visualization created in Tableau
 **What does it mean?**
 
 
-users most active/ least sedentary  on saturday
+Users were most active on saturdays, and least active on mondays
 
-Users tracking consistently daily, even when activity is low & calories are high
+Users were tracking consistently everyday, even when activity is low & calories were higher
 
-It’s possible the people who use smart fitness devices are regular, everyday, working women making small steps to be healthier 
+It’s likely these women are regular, everyday working women making small steps to fit healthy activity into their busy lives
 
 
 
